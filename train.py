@@ -40,54 +40,69 @@ def get_args():
 
 
 def train(opt):
+    # Check for cuda
     if torch.cuda.is_available():
         torch.cuda.manual_seed(123)
     else:
         torch.manual_seed(123)
+    # Not sure what this does
     if os.path.isdir(opt.log_path):
         shutil.rmtree(opt.log_path)
+    
+    # Create Logs
     os.makedirs(opt.log_path)
     writer = SummaryWriter(opt.log_path)
+    # Start environment
     env = Tetris(width=opt.width, height=opt.height, block_size=opt.block_size)
+    # Initialize model network, optimizer, and cost function
     model = DeepQNetwork()
     optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
     criterion = nn.MSELoss()
-
+    # Reset Environment Note: should do this automatically as part of initializing environment
     state = env.reset()
     if torch.cuda.is_available():
         model.cuda()
         state = state.cuda()
 
+    # Not sure
     replay_memory = deque(maxlen=opt.replay_memory_size)
+    # resetting epochs to 0 (maybe replace with for loop)
     epoch = 0
     while epoch < opt.num_epochs:
+        # Get actions and states
         next_steps = env.get_next_states()
-        # Exploration or exploitation
+        # Exploration or Exploitation Scheme
         epsilon = opt.final_epsilon + (max(opt.num_decay_epochs - epoch, 0) * (
                 opt.initial_epsilon - opt.final_epsilon) / opt.num_decay_epochs)
         u = random()
         random_action = u <= epsilon
+        # Splitting up actions and related resulting states
         next_actions, next_states = zip(*next_steps.items())
         next_states = torch.stack(next_states)
+        # Checking for cuda
         if torch.cuda.is_available():
             next_states = next_states.cuda()
+        # putting model into eval mode
         model.eval()
         with torch.no_grad():
             predictions = model(next_states)[:, 0]
+        # Putting model into train mode
         model.train()
-        if random_action:
+        if random_action: # Exploration 
             index = randint(0, len(next_steps) - 1)
-        else:
+        else: # Exploitation
             index = torch.argmax(predictions).item()
-
+        # Indexing next state chosen by scheme
         next_state = next_states[index, :]
         action = next_actions[index]
-
-        reward, done = env.step(action, render=True)
+        # Obataining actual reward and whether it is done
+        reward, done = env.step(action, render=False)
 
         if torch.cuda.is_available():
             next_state = next_state.cuda()
+        # Appending Memory
         replay_memory.append([state, reward, next_state, done])
+        # Gameover
         if done:
             final_score = env.score
             final_tetrominoes = env.tetrominoes

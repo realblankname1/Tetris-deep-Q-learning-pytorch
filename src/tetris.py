@@ -282,14 +282,21 @@ class Tetris:
         cv2.waitKey(1)
 
 if __name__ == "__main__":
+    import os
     from deep_q_network import DeepQNetwork
     from collections import deque
     
+    def convert_avi_to_mp4(avi_file_path, output_name):
+        os.popen("ffmpeg -i '{input}' -ac 2 -b:v 2000k -c:a aac -c:v libx264 -b:a 160k -vprofile high -bf 0 -strict experimental -f mp4 '{output}.mp4'".format(input = avi_file_path, output = output_name))
+        return True
+    avi_fp = 'output.avi'
+    video_name = 'output'
+
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter('output.avi',fourcc, 20.0, (640,480))
+    video = cv2.VideoWriter(avi_fp, fourcc, 20.0, (640,480))
 
-    num_epochs = 2100
+    num_epochs = 1000
     
     env = Tetris(width=10, height=20, block_size=20)
     # Initialize model network, optimizer, and cost function
@@ -335,7 +342,7 @@ if __name__ == "__main__":
         next_state = next_states[index, :]
         action = next_actions[index]
         # Obataining actual reward and whether it is done
-        reward, done = env.step(action, render=render)
+        reward, done = env.step(action, render=render, video=video)
 
         if torch.cuda.is_available():
             next_state = next_state.cuda()
@@ -391,3 +398,5 @@ if __name__ == "__main__":
             final_score,
             final_tetrominoes,
             final_cleared_lines))
+    video.release()
+    convert_avi_to_mp4(avi_fp, video_name)

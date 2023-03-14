@@ -7,7 +7,6 @@ import cv2
 from matplotlib import style
 import torch
 from random import shuffle, random, randint, sample
-import torch
 import torch.nn as nn
 
 style.use("ggplot")
@@ -15,14 +14,14 @@ style.use("ggplot")
 
 class Tetris:
     piece_colors = [
-        (0, 0, 0),
-        (255, 255, 0),
-        (147, 88, 254),
-        (54, 175, 144),
-        (255, 0, 0),
-        (102, 217, 238),
-        (254, 151, 32),
-        (0, 0, 255)
+        (0, 0, 0),          # Blank Space
+        (255, 255, 0),      # Smashboy          (Square)
+        (150, 50, 200),     # Teeweee           (Upside down T)
+        (50, 230, 230),     # Hero              (l shape)
+        (255, 0, 0),        # Cleveland Z       (z shape)
+        (0, 255, 0),        # Rhode Island Z    (s shape)
+        (254, 151, 32),     # Orange Ricky      (L shape)
+        (0, 0, 255)         # Blue Ricky        (Reverse L shape)
     ]
 
     pieces = [
@@ -286,7 +285,7 @@ if __name__ == "__main__":
     from deep_q_network import DeepQNetwork
     from collections import deque
 
-    num_epochs = 1
+    num_epochs = 2100
 
     env = Tetris(width=10, height=20, block_size=20)
     # Initialize model network, optimizer, and cost function
@@ -303,6 +302,8 @@ if __name__ == "__main__":
     replay_memory = deque(maxlen=30000)
     # resetting epochs to 0 (maybe replace with for loop)
     epoch = 0
+    # Intially Rendering is false until it starts to perform well
+    render = False
     while epoch < num_epochs:
         # Get actions and states
         next_steps = env.get_next_states()
@@ -330,7 +331,7 @@ if __name__ == "__main__":
         next_state = next_states[index, :]
         action = next_actions[index]
         # Obataining actual reward and whether it is done
-        reward, done = env.step(action, render=True)
+        reward, done = env.step(action, render=render)
 
         if torch.cuda.is_available():
             next_state = next_state.cuda()
@@ -342,10 +343,13 @@ if __name__ == "__main__":
             final_tetrominoes = env.tetrominoes
             final_cleared_lines = env.cleared_lines
             state = env.reset()
+            render = False
             if torch.cuda.is_available():
                 state = state.cuda()
         else:
             state = next_state
+            if env.score > 1000:
+                render = True
             continue
         if len(replay_memory) < 30000 / 10:
             continue

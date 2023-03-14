@@ -282,13 +282,14 @@ class Tetris:
         cv2.waitKey(1)
 
 if __name__ == "__main__":
-    import os
+    import moviepy.editor as moviepy
     from deep_q_network import DeepQNetwork
     from collections import deque
+    from subprocess import call
     
-    def convert_avi_to_mp4(avi_file_path, output_name):
-        os.popen("ffmpeg -i '{input}' -ac 2 -b:v 2000k -c:a aac -c:v libx264 -b:a 160k -vprofile high -bf 0 -strict experimental -f mp4 '{output}.mp4'".format(input = avi_file_path, output = output_name))
-        return True
+    # def convert_avi_to_mp4(avi_file_path, output_name):
+    #     clip = moviepy.VideoFileClip(avi_file_path)
+    #     clip.write_videofile(f"{output_name}.mp4")
     avi_fp = 'output.avi'
     video_name = 'output'
 
@@ -296,7 +297,7 @@ if __name__ == "__main__":
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     video = cv2.VideoWriter(avi_fp, fourcc, 20.0, (640,480))
 
-    num_epochs = 1000
+    num_epochs = 100
     
     env = Tetris(width=10, height=20, block_size=20)
     # Initialize model network, optimizer, and cost function
@@ -314,7 +315,7 @@ if __name__ == "__main__":
     # resetting epochs to 0 (maybe replace with for loop)
     epoch = 0
     # Intially Rendering is false until it starts to perform well
-    render = False
+    render = True
     while epoch < num_epochs:
         # Get actions and states
         next_steps = env.get_next_states()
@@ -399,4 +400,7 @@ if __name__ == "__main__":
             final_tetrominoes,
             final_cleared_lines))
     video.release()
-    convert_avi_to_mp4(avi_fp, video_name)
+    # convert_avi_to_mp4(avi_fp, video_name)
+    dir = avi_fp.strip(".avi")
+    command = "avconv -i %s.avi -c:v libx264 -c:a copy %s.mp4" % (dir, dir)
+    call(command.split())

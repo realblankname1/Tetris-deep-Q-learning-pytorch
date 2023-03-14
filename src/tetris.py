@@ -17,9 +17,9 @@ class Tetris:
         (0, 0, 0),          # Blank Space
         (255, 255, 0),      # Smashboy          (Square)
         (150, 50, 200),     # Teeweee           (Upside down T)
-        (50, 230, 230),     # Hero              (l shape)
-        (255, 0, 0),        # Cleveland Z       (z shape)
         (0, 255, 0),        # Rhode Island Z    (s shape)
+        (255, 0, 0),        # Cleveland Z       (z shape)
+        (50, 230, 230),     # Hero              (l shape)
         (254, 151, 32),     # Orange Ricky      (L shape)
         (0, 0, 255)         # Blue Ricky        (Reverse L shape)
     ]
@@ -288,7 +288,7 @@ if __name__ == "__main__":
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter('output.avi',fourcc, 20.0, (640,480))
-    
+
     num_epochs = 2100
     
     env = Tetris(width=10, height=20, block_size=20)

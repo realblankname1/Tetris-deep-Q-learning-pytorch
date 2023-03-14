@@ -233,7 +233,6 @@ class Tetris:
             self.score -= 2
 
         return score, self.gameover
-
     def render(self, video=None):
         # Grabs the pieces as colors
         if not self.gameover:
@@ -282,24 +281,24 @@ class Tetris:
         cv2.waitKey(1)
 
 if __name__ == "__main__":
-    import moviepy.editor as moviepy
+    import os
     from deep_q_network import DeepQNetwork
     from collections import deque
-    from subprocess import call
     
-    # def convert_avi_to_mp4(avi_file_path, output_name):
-    #     clip = moviepy.VideoFileClip(avi_file_path)
-    #     clip.write_videofile(f"{output_name}.mp4")
+    def convert_avi_to_mp4(avi_file_path, output_name):
+        os.popen("ffmpeg -i '{input}' -ac 2 -b:v 2000k -c:a aac -c:v libx264 -b:a 160k -vprofile high -bf 0 -strict experimental -f mp4 '{output}.mp4'".format(input = avi_file_path, output = output_name))
+        return True
     avi_fp = 'output.avi'
     video_name = 'output'
 
-    # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    video = cv2.VideoWriter(avi_fp, fourcc, 20.0, (640,480))
 
     num_epochs = 100
     
     env = Tetris(width=10, height=20, block_size=20)
+
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    video = cv2.VideoWriter(avi_fp, fourcc, 60.0, (int(1.5 * env.width*env.block_size), env.height*env.block_size))
     # Initialize model network, optimizer, and cost function
     model = DeepQNetwork()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
@@ -400,7 +399,5 @@ if __name__ == "__main__":
             final_tetrominoes,
             final_cleared_lines))
     video.release()
-    # convert_avi_to_mp4(avi_fp, video_name)
-    dir = avi_fp.strip(".avi")
-    command = "avconv -i %s.avi -c:v libx264 -c:a copy %s.mp4" % (dir, dir)
-    call(command.split())
+    convert_avi_to_mp4(avi_fp, video_name)
+    

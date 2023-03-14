@@ -284,9 +284,13 @@ class Tetris:
 if __name__ == "__main__":
     from deep_q_network import DeepQNetwork
     from collections import deque
-
+    
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter('output.avi',fourcc, 20.0, (640,480))
+    
     num_epochs = 2100
-
+    
     env = Tetris(width=10, height=20, block_size=20)
     # Initialize model network, optimizer, and cost function
     model = DeepQNetwork()

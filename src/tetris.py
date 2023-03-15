@@ -292,7 +292,7 @@ if __name__ == "__main__":
     video_name = 'output'
 
 
-    num_epochs = 100
+    num_epochs = 2200
     
     env = Tetris(width=10, height=20, block_size=20)
 
@@ -313,6 +313,7 @@ if __name__ == "__main__":
     replay_memory = deque(maxlen=30000)
     # resetting epochs to 0 (maybe replace with for loop)
     epoch = 0
+    max_score = 0
     # Intially Rendering is false until it starts to perform well
     render = True
     while epoch < num_epochs:
@@ -359,7 +360,8 @@ if __name__ == "__main__":
                 state = state.cuda()
         else:
             state = next_state
-            if env.score > 1000:
+            if env.score > max_score:
+                max_score = env.score
                 render = True
             continue
         if len(replay_memory) < 30000 / 10:

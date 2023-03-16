@@ -18,6 +18,8 @@ def get_args():
     parser.add_argument("--width", type=int, default=10, help="Width of Tetris board")
     parser.add_argument("--height", type=int, default=20, help="Height of Tetris board")
     parser.add_argument("--block_size", type=int, default=30, help="Size of a block")
+    parser.add_argument("--fps", type=int, default=600, help="frames per second")
+    parser.add_argument("--output", type=str, default="output.mp4")
 
     args = parser.parse_args()
     return args
@@ -40,12 +42,14 @@ def evaluate(opt):
     env = Tetris(width=opt.width, height=opt.height, block_size=opt.block_size)
 
     # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    video = cv2.VideoWriter('output.avi', fourcc, 60.0, (int(1.5 * env.width*env.block_size), env.height*env.block_size))
-
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    video = cv2.VideoWriter(opt.output, fourcc, opt.fps, 
+                            (int(1.5 * env.width*env.block_size), 
+                             env.height*env.block_size))
 
     # Intialize the model, optimizer, and loss function
     model = DQN().to(device)
+    model.load_state_dict(torch.load(opt.model_path))
     state = env.reset().to(device)
     model.eval()
 
@@ -82,10 +86,8 @@ def evaluate(opt):
             final_score,
             final_tetrominoes,
             final_cleared_lines))
+    video.release()
 
 if __name__ == "__main__":
     opt = get_args()
-    print(opt.model_path)
-    checkpoint = torch.load(opt.model_path)
-    print(checkpoint)
-    # evaluate(opt)
+    evaluate(opt)

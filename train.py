@@ -120,7 +120,7 @@ def train(opt):
         # Save Weights if new max score was reached
         if opt.score_saving and final_score > max_score:
             max_score = final_score
-            torch.save(model, "{}/tetris_{}".format(opt.saved_path, epoch))
+            torch.save(model.state_dict(), "{}/tetris_{}".format(opt.saved_path, epoch))
 
         # increment epoch 
         epoch += 1

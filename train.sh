@@ -1,0 +1,1 @@
+python train.py --score_saving 1 --render 0

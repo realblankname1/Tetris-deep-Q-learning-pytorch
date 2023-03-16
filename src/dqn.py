@@ -1,11 +1,8 @@
-"""
-@author: Viet Nguyen <nhviet1009@gmail.com>
-"""
 import torch.nn as nn
 
-class DeepQNetwork(nn.Module):
+class DQN(nn.Module):
     def __init__(self):
-        super(DeepQNetwork, self).__init__()
+        super(DQN, self).__init__()
 
         self.conv1 = nn.Sequential(nn.Linear(4, 64), nn.ReLU(inplace=True))
         self.conv2 = nn.Sequential(nn.Linear(64, 64), nn.ReLU(inplace=True))

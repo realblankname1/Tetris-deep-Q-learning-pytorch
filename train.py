@@ -57,10 +57,6 @@ def train(opt):
 
     # Check for cuda
     cuda_available = torch.cuda.is_available()
-    if cuda_available:
-        torch.cuda.manual_seed(123)
-    else:
-        torch.manual_seed(123)
 
     # Making the environment
     env = Tetris(width=opt.width, height=opt.height, block_size=opt.block_size)
@@ -72,8 +68,6 @@ def train(opt):
         video = cv2.VideoWriter('output.avi', fourcc, 60.0, (int(1.5 * env.width*env.block_size), env.height*env.block_size))
     else:
         video=None
-    
-
 
     # Intialize the model, optimizer, and loss function
     model = DQN()

@@ -1,3 +1,4 @@
 *.mp4
 *.avi
 output*
+trained_models/

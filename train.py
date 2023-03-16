@@ -76,6 +76,7 @@ def train(opt):
     # The memory to train the DQN
     memory = deque(maxlen=opt.memory_size)
     epoch = 0
+    max_score = 0
     epsilon = calc_epsilon(0)
     while epoch < opt.num_epochs:
         # Get state action pairs
@@ -117,7 +118,8 @@ def train(opt):
             continue
 
         # Save Weights if new max score was reached
-        if opt.score_saving:
+        if opt.score_saving and final_score > max_score:
+            max_score = final_score
             torch.save(model, "{}/tetris_{}".format(opt.saved_path, epoch))
 
         # increment epoch 

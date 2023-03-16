@@ -36,11 +36,10 @@ def get_args():
     args = parser.parse_args()
     return args
 
-def prepare_batch(memory, batch_size, cuda_available):
+def prepare_batch(memory, batch_size, device):
     # Pick out of rollout related state actions and resulting rewards
     batch = sample(memory, batch_size)
     state_batch, reward_batch, next_state_batch, done_batch = zip(*batch)
-    device = torch.device('cuda' if cuda_available else 'cpu')
 
     state_batch = torch.stack(tuple(state for state in state_batch)).to(device)
     next_state_batch = torch.stack(tuple(state for state in next_state_batch)).to(device)
@@ -56,8 +55,7 @@ def train(opt):
         return opt.final_epsilon + ((opt.num_decay_epochs - epoch) * (opt.initial_epsilon - opt.final_epsilon) / opt.num_decay_epochs)
 
     # Check for cuda
-    cuda_available = torch.cuda.is_available()
-
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # Making the environment
     env = Tetris(width=opt.width, height=opt.height, block_size=opt.block_size)
 
@@ -70,15 +68,10 @@ def train(opt):
         video=None
 
     # Intialize the model, optimizer, and loss function
-    model = DQN()
+    model = DQN().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
     criterion = nn.MSELoss()
-    state = env.reset()
-
-    # Checking for CUDA
-    if cuda_available:
-        model.cuda()
-        state = state.cuda()
+    state = env.reset().to(device)
 
     # The memory to train the DQN
     memory = deque(maxlen=opt.memory_size)
@@ -89,9 +82,8 @@ def train(opt):
         state_action_pairs = env.get_next_states()
         # Getting Actions and States
         actions, next_states = zip(*state_action_pairs.items())
-        next_states = torch.stack(next_states)
-        if cuda_available:
-            next_states = next_states.cuda()
+        next_states = torch.stack(next_states).to(device)
+
         # Evaluating Network
         model.eval()
         with torch.no_grad():
@@ -115,9 +107,7 @@ def train(opt):
             final_score = env.score
             final_tetrominoes = env.tetrominoes,
             final_cleared_lines = env.cleared_lines
-            state = env.reset()
-            if cuda_available:
-                state = state.cuda()
+            state = env.reset().to(device)
         else:
             state = next_state
             continue
@@ -135,7 +125,7 @@ def train(opt):
         # Calculate New Epsilon
         epsilon = calc_epsilon(epoch)
         # Get Batch data
-        state_batch, reward_batch, next_state_batch, done_batch = prepare_batch(memory, opt.batch_size, cuda_available)
+        state_batch, reward_batch, next_state_batch, done_batch = prepare_batch(memory, opt.batch_size, device)
 
         # Get associated q values
         q_sa = model(state_batch)

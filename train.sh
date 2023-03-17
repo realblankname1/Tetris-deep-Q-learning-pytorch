@@ -1,1 +1,1 @@
-python train.py --score_saving 0 --render 0 --lr 1e-3
+python train.py --score_saving 0 --render 0

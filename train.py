@@ -21,7 +21,6 @@ def get_args():
     parser.add_argument("--initial_lr", type=float, default=1e-3)
     parser.add_argument("--gamma_lr", type=float, default=.5)
     parser.add_argument("--step_size_lr", type=float, default=2000)
-    parser.add_argument("--last_epoch_lr", type=float, default=3000)
     parser.add_argument("--gamma", type=float, default=0.99, help="Discount Rate")
     parser.add_argument("--initial_epsilon", type=float, default=1)
     parser.add_argument("--final_epsilon", type=float, default=1e-3)
@@ -150,6 +149,7 @@ def train(opt):
         optimizer.zero_grad()
         loss = criterion(q_sa, y_batch)
         loss.backward()
+        optimizer.step()
         scheduler.step()
 
         print("Epoch: {}/{}, Action: {}, Score: {}, Tetrominoes {}, Cleared lines: {}".format(

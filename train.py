@@ -18,7 +18,10 @@ def get_args():
     parser.add_argument("--height", type=int, default=20, help="Height of Tetris board")
     parser.add_argument("--block_size", type=int, default=30, help="Size of a block")
     parser.add_argument("--batch_size", type=int, default=512, help="The number of samples per batch")
-    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--initial_lr", type=float, default=1e-3)
+    parser.add_argument("--gamma_lr", type=float, default=.5)
+    parser.add_argument("--step_size_lr", type=float, default=2000)
+    parser.add_argument("--last_epoch_lr", type=float, default=3000)
     parser.add_argument("--gamma", type=float, default=0.99, help="Discount Rate")
     parser.add_argument("--initial_epsilon", type=float, default=1)
     parser.add_argument("--final_epsilon", type=float, default=1e-3)
@@ -69,7 +72,10 @@ def train(opt):
 
     # Intialize the model, optimizer, and loss function
     model = DQN().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=opt.initial_lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, 
+                                                step_size=opt.step_size_lr,
+                                                gamma=opt.gamma_lr)
     criterion = nn.MSELoss()
     state = env.reset().to(device)
 
@@ -144,7 +150,7 @@ def train(opt):
         optimizer.zero_grad()
         loss = criterion(q_sa, y_batch)
         loss.backward()
-        optimizer.step()
+        scheduler.step()
 
         print("Epoch: {}/{}, Action: {}, Score: {}, Tetrominoes {}, Cleared lines: {}".format(
             epoch,

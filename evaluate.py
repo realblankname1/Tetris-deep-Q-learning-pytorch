@@ -1,12 +1,8 @@
 import argparse
-import os
-import shutil
-from random import random, randint, sample
+from random import sample
 import numpy as np
 import torch
-import torch.nn as nn
 import cv2
-from collections import deque
 
 from src.dqn import DQN
 from src.tetris import Tetris
@@ -42,7 +38,7 @@ def evaluate(opt):
     env = Tetris(width=opt.width, height=opt.height, block_size=opt.block_size)
 
     # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
     video = cv2.VideoWriter(opt.output, fourcc, opt.fps, 
                             (int(1.5 * env.width*env.block_size), 
                              env.height*env.block_size))

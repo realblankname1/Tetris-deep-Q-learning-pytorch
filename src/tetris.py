@@ -307,15 +307,10 @@ if __name__ == "__main__":
             final_tetrominoes = env.tetrominoes
             final_cleared_lines = env.cleared_lines
             state = env.reset()
-            render = False
             if torch.cuda.is_available():
                 state = state.cuda()
         else:
             state = next_state
-            if env.score > max_score:
-                max_score = env.score
-                render = True
-            continue
 
         print("Action: {}, Score: {}, Tetrominoes {}, Cleared lines: {}".format(
             action,

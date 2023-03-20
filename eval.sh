@@ -1,0 +1,1 @@
+python evaluate.py --model_path trained_models\tetris_2742

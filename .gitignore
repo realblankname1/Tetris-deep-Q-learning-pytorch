@@ -2,3 +2,4 @@
 *.avi
 output*
 trained_models/
+runs/

@@ -1,1 +1,1 @@
-python train.py --score_saving 0 --render 0 --step_size_lr 3000
+python train.py --score_saving 0 --render 0 --step_size_lr 2000 --gamma_lr .5 --initial_lr 1e-3

@@ -1,1 +1,1 @@
-python train.py --score_saving 0 --render 0
+python train.py --score_saving 0 --render 0 --step_size_lr 3000

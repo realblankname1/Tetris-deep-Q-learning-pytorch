@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import cv2
 from collections import deque
+from torch.utils.tensorboard import SummaryWriter
 
 from src.dqn import DQN
 from src.tetris import Tetris
@@ -56,6 +57,7 @@ def train(opt):
             return opt.final_epsilon
         return opt.final_epsilon + ((opt.num_decay_epochs - epoch) * (opt.initial_epsilon - opt.final_epsilon) / opt.num_decay_epochs)
 
+    writer = SummaryWriter()
     # Check for cuda
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # Making the environment
@@ -82,6 +84,7 @@ def train(opt):
     memory = deque(maxlen=opt.memory_size)
     epoch = 0
     max_score = 0
+    frames = 0
     epsilon = calc_epsilon(0)
     while epoch < opt.num_epochs:
         # Get state action pairs
@@ -109,12 +112,14 @@ def train(opt):
         # Append information to memory for later evaluation
         memory.append([state, reward, next_state, done])
 
-        if done: # Gameover
+        if done or frames > opt.memory_size: # Gameover
+            frames = 0
             final_score = env.score
-            final_tetrominoes = env.tetrominoes,
+            final_tetrominoes = env.tetrominoes
             final_cleared_lines = env.cleared_lines
             state = env.reset().to(device)
         else:
+            frames += 1
             state = next_state
             continue
         # if the number of states in memory is smaller than batch size
@@ -159,6 +164,9 @@ def train(opt):
             final_score,
             final_tetrominoes,
             final_cleared_lines))
+        writer.add_scalar('Train/Score', final_score, epoch - 1)
+        writer.add_scalar('Train/Tetrominoes', final_tetrominoes, epoch - 1)
+        writer.add_scalar('Train/Cleared lines', final_cleared_lines, epoch - 1)
 
 if __name__ == "__main__":
     opt = get_args()
